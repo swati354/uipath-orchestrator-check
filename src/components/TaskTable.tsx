@@ -7,34 +7,25 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { TaskAssignmentDialog } from '@/components/TaskAssignmentDialog';
 import { TaskCompletionDialog } from '@/components/TaskCompletionDialog';
 import { useUiPathTasks } from '@/lib/uipath-hooks';
-import { useUiPathAuth } from '@/hooks/useUiPathAuth';
+import { useUiPathAuth } from '@/contexts/UiPathAuthContext';
 import { Search, Filter, UserPlus, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
-import type { RawTaskGetResponse } from 'uipath-sdk';
 export function TaskTable() {
   const { isAuthenticated } = useUiPathAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedTaskForAssignment, setSelectedTaskForAssignment] = useState<RawTaskGetResponse | null>(null);
-  const [selectedTaskForCompletion, setSelectedTaskForCompletion] = useState<RawTaskGetResponse | null>(null);
+  const [selectedTaskForAssignment, setSelectedTaskForAssignment] = useState<any>(null);
+  const [selectedTaskForCompletion, setSelectedTaskForCompletion] = useState<any>(null);
   const { data: tasks, isLoading, error, refetch } = useUiPathTasks(undefined, isAuthenticated);
   // Handle pagination - UiPath SDK returns either array or paginated response
-  const taskArray: RawTaskGetResponse[] = React.useMemo(() => {
-    if (!tasks) return [];
-    if (Array.isArray(tasks)) return tasks;
-    // Handle paginated response structure
-    if (typeof tasks === 'object' && 'value' in tasks && Array.isArray((tasks as any).value)) {
-      return (tasks as any).value;
-    }
-    return [];
-  }, [tasks]);
+  const taskArray = Array.isArray(tasks) ? tasks : tasks?.value || [];
   // Filter tasks based on search and status
   const filteredTasks = taskArray.filter((task) => {
     const matchesSearch = task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.data?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' ||
+                         task.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
                          task.status?.toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
@@ -68,15 +59,6 @@ export function TaskTable() {
       default:
         return 'text-gray-600';
     }
-  };
-  // Helper function to get assignee display name
-  const getAssigneeDisplay = (assignedToUser: any): string => {
-    if (!assignedToUser) return 'Unassigned';
-    if (typeof assignedToUser === 'string') return assignedToUser;
-    if (typeof assignedToUser === 'object' && assignedToUser.userName) {
-      return assignedToUser.userName;
-    }
-    return 'Assigned';
   };
   if (isLoading) {
     return (
@@ -154,8 +136,8 @@ export function TaskTable() {
             {filteredTasks.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                  {searchTerm || statusFilter !== 'all'
-                    ? 'No tasks match your filters'
+                  {searchTerm || statusFilter !== 'all' 
+                    ? 'No tasks match your filters' 
                     : 'No tasks found. Create tasks in UiPath Action Center to see them here.'}
                 </TableCell>
               </TableRow>
@@ -165,9 +147,9 @@ export function TaskTable() {
                   <TableCell className="py-3">
                     <div>
                       <div className="font-medium text-sm text-foreground">{task.title || 'Untitled Task'}</div>
-                      {task.data && (
+                      {task.description && (
                         <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                          {typeof task.data === 'string' ? task.data : JSON.stringify(task.data)}
+                          {task.description}
                         </div>
                       )}
                     </div>
@@ -178,21 +160,21 @@ export function TaskTable() {
                     </span>
                   </TableCell>
                   <TableCell className="py-3">
-                    <StatusBadge
-                      status={task.status || 'Pending'}
+                    <StatusBadge 
+                      status={task.status || 'Pending'} 
                       variant={getStatusVariant(task.status)}
                     />
                   </TableCell>
                   <TableCell className="py-3">
                     <span className="text-sm text-muted-foreground">
-                      {getAssigneeDisplay(task.assignedToUser)}
+                      {task.assignedToUser || 'Unassigned'}
                     </span>
                   </TableCell>
                   <TableCell className="py-3">
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      {task.createdTime
-                        ? formatDistanceToNow(new Date(task.createdTime), { addSuffix: true })
+                      {task.creationTime 
+                        ? formatDistanceToNow(new Date(task.creationTime), { addSuffix: true })
                         : 'N/A'}
                     </div>
                   </TableCell>
