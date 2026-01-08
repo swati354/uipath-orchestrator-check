@@ -34,8 +34,8 @@ export function ProcessTable() {
     if (!processes) return [];
     if (Array.isArray(processes)) return processes;
     // Handle paginated response structure
-    if (typeof processes === 'object' && 'value' in processes && Array.isArray(processes.value)) {
-      return processes.value;
+    if (typeof processes === 'object' && 'value' in processes && Array.isArray((processes as any).value)) {
+      return (processes as any).value;
     }
     return [];
   }, [processes]);
@@ -141,7 +141,7 @@ export function ProcessTable() {
                   </TableCell>
                   <TableCell className="py-3">
                     <span className="text-sm font-mono text-muted-foreground">
-                      {process.version || 'N/A'}
+                      {process.processVersion || 'N/A'}
                     </span>
                   </TableCell>
                   <TableCell className="py-3">

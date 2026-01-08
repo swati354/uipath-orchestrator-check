@@ -1,5 +1,5 @@
 import React from 'react';
-import { useUiPathAuth } from '@/contexts/UiPathAuthContext';
+import { useUiPathAuth } from '@/hooks/useUiPathAuth';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -70,8 +70,8 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
                   </AlertDescription>
                 </Alert>
                 <div className="space-y-3">
-                  <Button 
-                    onClick={reinitialize} 
+                  <Button
+                    onClick={reinitialize}
                     className="w-full bg-[#FA4616] hover:bg-[#E55A1B] text-white"
                   >
                     <RefreshCw className="h-4 w-4 mr-2" />
@@ -117,8 +117,8 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
                     You need to sign in to access your automation resources.
                   </AlertDescription>
                 </Alert>
-                <Button 
-                  onClick={reinitialize} 
+                <Button
+                  onClick={reinitialize}
                   className="w-full bg-[#FA4616] hover:bg-[#E55A1B] text-white"
                 >
                   <ExternalLink className="h-4 w-4 mr-2" />

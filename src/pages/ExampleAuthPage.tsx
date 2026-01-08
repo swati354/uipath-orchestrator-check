@@ -1,11 +1,10 @@
 import React from 'react';
-import { useUiPathAuth } from '@/contexts/UiPathAuthContext';
+import { useUiPathAuth } from '@/hooks/useUiPathAuth';
 import { AuthWrapper } from '@/components/AuthWrapper';
 import { useUiPathProcesses } from '@/hooks/useUiPathProcesses';
-
 /**
  * Example page showing proper authentication handling
- * 
+ *
  * Key points:
  * 1. Use AuthWrapper to handle loading/error states
  * 2. Only enable queries when authenticated
@@ -13,26 +12,21 @@ import { useUiPathProcesses } from '@/hooks/useUiPathProcesses';
  */
 export function ExampleAuthPage() {
   const { isAuthenticated } = useUiPathAuth();
-  
   // Only fetch data when authenticated
   const { data: processes, isLoading, error } = useUiPathProcesses(
     undefined, // folderId
     isAuthenticated // Only enable when authenticated
   );
-
   return (
     <AuthWrapper>
       <div className="container mx-auto py-8">
         <h1 className="text-2xl font-bold mb-4">UiPath Processes</h1>
-        
         {isLoading && (
           <div className="text-muted-foreground">Loading processes...</div>
         )}
-        
         {error && (
           <div className="text-destructive">Error: {error.message}</div>
         )}
-        
         {processes && (
           <div className="grid gap-4">
             {processes.map((process) => (

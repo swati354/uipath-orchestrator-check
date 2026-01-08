@@ -25,15 +25,15 @@ export function TaskTable() {
     if (!tasks) return [];
     if (Array.isArray(tasks)) return tasks;
     // Handle paginated response structure
-    if (typeof tasks === 'object' && 'value' in tasks && Array.isArray(tasks.value)) {
-      return tasks.value;
+    if (typeof tasks === 'object' && 'value' in tasks && Array.isArray((tasks as any).value)) {
+      return (tasks as any).value;
     }
     return [];
   }, [tasks]);
   // Filter tasks based on search and status
   const filteredTasks = taskArray.filter((task) => {
     const matchesSearch = task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.data?.toLowerCase().includes(searchTerm.toLowerCase()); // Use data instead of description
+                         task.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' ||
                          task.status?.toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
@@ -165,9 +165,9 @@ export function TaskTable() {
                   <TableCell className="py-3">
                     <div>
                       <div className="font-medium text-sm text-foreground">{task.title || 'Untitled Task'}</div>
-                      {task.data && (
+                      {task.description && (
                         <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                          {task.data}
+                          {typeof task.description === 'string' ? task.description : JSON.stringify(task.description)}
                         </div>
                       )}
                     </div>

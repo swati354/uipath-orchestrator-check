@@ -28,8 +28,8 @@ export function AssetTable() {
     if (!assets) return [];
     if (Array.isArray(assets)) return assets;
     // Handle paginated response structure
-    if (typeof assets === 'object' && 'value' in assets && Array.isArray(assets.value)) {
-      return assets.value;
+    if (typeof assets === 'object' && 'value' in assets && Array.isArray((assets as any).value)) {
+      return (assets as any).value;
     }
     return [];
   }, [assets]);
@@ -146,8 +146,8 @@ export function AssetTable() {
                   <TableCell className="py-3">
                     <div className="font-mono text-sm text-muted-foreground max-w-xs">
                       {visibleValues.has(asset.id)
-                        ? asset.value || 'N/A'
-                        : maskValue(asset.value, asset.valueType)}
+                        ? asset.stringValue || 'N/A'
+                        : maskValue(asset.stringValue, asset.valueType)}
                     </div>
                   </TableCell>
                   <TableCell className="py-3">
