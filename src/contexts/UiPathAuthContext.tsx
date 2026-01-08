@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { initializeUiPathSDK, getUiPath } from '@/lib/uipath';
 interface UiPathAuthContextType {
   isInitializing: boolean;
@@ -6,7 +6,7 @@ interface UiPathAuthContextType {
   error: string | null;
   reinitialize: () => Promise<void>;
 }
-const UiPathAuthContext = createContext<UiPathAuthContextType | undefined>(undefined);
+export const UiPathAuthContext = createContext<UiPathAuthContextType | undefined>(undefined);
 export function UiPathAuthProvider({ children }: { children: ReactNode }) {
   const [isInitializing, setIsInitializing] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -56,11 +56,4 @@ export function UiPathAuthProvider({ children }: { children: ReactNode }) {
       {children}
     </UiPathAuthContext.Provider>
   );
-}
-export function useUiPathAuth() {
-  const context = useContext(UiPathAuthContext);
-  if (context === undefined) {
-    throw new Error('useUiPathAuth must be used within a UiPathAuthProvider');
-  }
-  return context;
 }

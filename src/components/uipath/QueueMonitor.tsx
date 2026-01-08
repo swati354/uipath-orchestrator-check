@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Queue, TrendingUp, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Layers, TrendingUp, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 interface QueueMonitorProps {
   queue: {
     id: number | string;
@@ -51,7 +51,7 @@ export function QueueMonitor({ queue }: QueueMonitorProps) {
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FA4616] to-[#E55A1B] flex items-center justify-center">
-            <Queue className="h-4 w-4 text-white" />
+            <Layers className="h-4 w-4 text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <CardTitle className="text-base font-semibold truncate">
@@ -114,10 +114,10 @@ export function QueueMonitor({ queue }: QueueMonitorProps) {
         {totalItems > 0 && (
           <div className="pt-2 border-t border-border">
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className="bg-gradient-to-r from-[#FA4616] to-[#E55A1B] h-2 rounded-full transition-all duration-300"
-                style={{ 
-                  width: `${Math.max(5, (queue.itemCounts.successful / totalItems) * 100)}%` 
+                style={{
+                  width: `${Math.max(5, (queue.itemCounts.successful / totalItems) * 100)}%`
                 }}
               />
             </div>

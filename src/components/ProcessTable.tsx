@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useUiPathProcesses, useStartProcess } from '@/lib/uipath-hooks';
-import { useUiPathAuth } from '@/contexts/UiPathAuthContext';
+import { useUiPathAuth } from '@/hooks/useUiPathAuth';
 import { Play, Search, Filter, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -45,7 +45,7 @@ export function ProcessTable() {
                          process.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' ||
                          (statusFilter === 'published' && process.isLatestVersion) ||
-                         (statusFilter === 'active' && process.isActive);
+                         (statusFilter === 'active' && process.isLatestVersion); // Use isLatestVersion instead of isActive
     return matchesSearch && matchesStatus;
   });
   if (isLoading) {
@@ -141,7 +141,7 @@ export function ProcessTable() {
                   </TableCell>
                   <TableCell className="py-3">
                     <span className="text-sm font-mono text-muted-foreground">
-                      {process.processVersion || 'N/A'}
+                      {process.version || 'N/A'}
                     </span>
                   </TableCell>
                   <TableCell className="py-3">

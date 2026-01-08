@@ -8,12 +8,10 @@
  * - Fetch execution history
  * - Control instances (pause, resume, cancel)
  */
-
 import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
 import { getUiPath } from '../lib/uipath';
 import { toast } from 'sonner';
-import type { MaestroProcessGetAllResponse,ProcessInstanceGetResponse, RawProcessInstanceGetResponse, ProcessInstanceOperationResponse, ProcessInstanceExecutionHistoryResponse, ProcessInstanceGetVariablesResponse, ProcessInstanceGetVariablesOptions } from 'uipath-sdk';
-
+import type { MaestroProcessGetAllResponse,ProcessInstanceGetResponse, RawProcessInstanceGetResponse, ProcessInstanceOperationResponse, ProcessInstanceExecutionHistoryResponse, ProcessInstanceGetVariablesResponse, ProcessInstanceGetVariablesOptions, OperationResponse } from 'uipath-sdk';
 /**
  * Fetch all Maestro processes
  *
@@ -24,11 +22,9 @@ export function useUiPathMaestroProcesses(enabled = true): UseQueryResult<Maestr
 		queryKey: ['uipath', 'maestro', 'processes'],
 		queryFn: async (): Promise<MaestroProcessGetAllResponse[]> => {
 			const uipath = getUiPath();
-			
 			if (!uipath.isAuthenticated()) {
 				throw new Error('Not authenticated. Please complete the authentication flow.');
 			}
-			
 			const result = await uipath.maestro.processes.getAll();
 			// Handle both paginated and direct array responses
 			if (Array.isArray(result)) {
@@ -41,7 +37,6 @@ export function useUiPathMaestroProcesses(enabled = true): UseQueryResult<Maestr
 		gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
 	});
 }
-
 /**
  * Fetch all Maestro process instances
  *
@@ -52,11 +47,9 @@ export function useUiPathMaestroInstances(enabled = true): UseQueryResult<RawPro
 		queryKey: ['uipath', 'maestro', 'instances'],
 		queryFn: async (): Promise<RawProcessInstanceGetResponse[]> => {
 			const uipath = getUiPath();
-			
 			if (!uipath.isAuthenticated()) {
 				throw new Error('Not authenticated. Please complete the authentication flow.');
 			}
-			
 			const result = await uipath.maestro.processes.instances.getAll();
 			// Handle both paginated and direct array responses
 			if (Array.isArray(result)) {
@@ -69,7 +62,6 @@ export function useUiPathMaestroInstances(enabled = true): UseQueryResult<RawPro
 		gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
 	});
 }
-
 /**
  * Fetch a single Maestro process instance by ID
  *
@@ -88,13 +80,10 @@ export function useUiPathMaestroInstanceById(
 			if (!instanceId || !folderKey) {
 				throw new Error('Instance ID and folder key are required');
 			}
-
 			const uipath = getUiPath();
-			
 			if (!uipath.isAuthenticated()) {
 				throw new Error('Not authenticated. Please complete the authentication flow.');
 			}
-
 			const result: ProcessInstanceGetResponse = await uipath.maestro.processes.instances.getById(instanceId, folderKey);
 			return result;
 		},
@@ -103,13 +92,11 @@ export function useUiPathMaestroInstanceById(
 		gcTime: 3 * 60 * 1000, // Keep in cache for 3 minutes
 	});
 }
-
 /**
  * Mutation to pause a Maestro process instance
  */
-export function usePauseMaestroInstance(): UseMutationResult<ProcessInstanceOperationResponse, Error, { instanceId: string; folderKey: string; comment?: string }> {
+export function usePauseMaestroInstance(): UseMutationResult<OperationResponse<ProcessInstanceOperationResponse>, Error, { instanceId: string; folderKey: string; comment?: string }> {
 	const queryClient = useQueryClient();
-
 	return useMutation({
 		mutationFn: async ({
 			instanceId,
@@ -119,19 +106,17 @@ export function usePauseMaestroInstance(): UseMutationResult<ProcessInstanceOper
 			instanceId: string;
 			folderKey: string;
 			comment?: string;
-		}): Promise<ProcessInstanceOperationResponse> => {
+		}): Promise<OperationResponse<ProcessInstanceOperationResponse>> => {
 			const uipath = getUiPath();
-			
 			if (!uipath.isAuthenticated()) {
 				throw new Error('UiPath SDK not authenticated. Please authenticate first.');
 			}
-			
 			const result = await uipath.maestro.processes.instances.pause(
 				instanceId,
 				folderKey,
 				comment ? { comment } : undefined
 			);
-			return result as ProcessInstanceOperationResponse;
+			return result;
 		},
 		onSuccess: () => {
 			toast.success('Maestro instance paused');
@@ -142,13 +127,11 @@ export function usePauseMaestroInstance(): UseMutationResult<ProcessInstanceOper
 		},
 	});
 }
-
 /**
  * Mutation to resume a Maestro process instance
  */
-export function useResumeMaestroInstance(): UseMutationResult<ProcessInstanceOperationResponse, Error, { instanceId: string; folderKey: string; comment?: string }> {
+export function useResumeMaestroInstance(): UseMutationResult<OperationResponse<ProcessInstanceOperationResponse>, Error, { instanceId: string; folderKey: string; comment?: string }> {
 	const queryClient = useQueryClient();
-
 	return useMutation({
 		mutationFn: async ({
 			instanceId,
@@ -158,19 +141,17 @@ export function useResumeMaestroInstance(): UseMutationResult<ProcessInstanceOpe
 			instanceId: string;
 			folderKey: string;
 			comment?: string;
-		}): Promise<ProcessInstanceOperationResponse> => {
+		}): Promise<OperationResponse<ProcessInstanceOperationResponse>> => {
 			const uipath = getUiPath();
-			
 			if (!uipath.isAuthenticated()) {
 				throw new Error('UiPath SDK not authenticated. Please authenticate first.');
 			}
-			
 			const result = await uipath.maestro.processes.instances.resume(
 				instanceId,
 				folderKey,
 				comment ? { comment } : undefined
 			);
-			return result as ProcessInstanceOperationResponse;
+			return result;
 		},
 		onSuccess: () => {
 			toast.success('Maestro instance resumed');
@@ -181,13 +162,11 @@ export function useResumeMaestroInstance(): UseMutationResult<ProcessInstanceOpe
 		},
 	});
 }
-
 /**
  * Mutation to cancel a Maestro process instance
  */
-export function useCancelMaestroInstance(): UseMutationResult<ProcessInstanceOperationResponse, Error, { instanceId: string; folderKey: string; comment?: string }> {
+export function useCancelMaestroInstance(): UseMutationResult<OperationResponse<ProcessInstanceOperationResponse>, Error, { instanceId: string; folderKey: string; comment?: string }> {
 	const queryClient = useQueryClient();
-
 	return useMutation({
 		mutationFn: async ({
 			instanceId,
@@ -197,19 +176,17 @@ export function useCancelMaestroInstance(): UseMutationResult<ProcessInstanceOpe
 			instanceId: string;
 			folderKey: string;
 			comment?: string;
-		}): Promise<ProcessInstanceOperationResponse> => {
+		}): Promise<OperationResponse<ProcessInstanceOperationResponse>> => {
 			const uipath = getUiPath();
-			
 			if (!uipath.isAuthenticated()) {
 				throw new Error('UiPath SDK not authenticated. Please authenticate first.');
 			}
-			
 			const result = await uipath.maestro.processes.instances.cancel(
 				instanceId,
 				folderKey,
 				comment ? { comment } : undefined
 			);
-			return result as ProcessInstanceOperationResponse;
+			return result;
 		},
 		onSuccess: () => {
 			toast.success('Maestro instance cancelled');
@@ -220,7 +197,6 @@ export function useCancelMaestroInstance(): UseMutationResult<ProcessInstanceOpe
 		},
 	});
 }
-
 /**
  * Fetch BPMN diagram for a Maestro process instance
  *
@@ -242,13 +218,10 @@ export function useUiPathMaestroBpmnDiagram(
 			if (!instanceId || !folderKey) {
 				throw new Error('Instance ID and folder key are required');
 			}
-
 			const uipath = getUiPath();
-			
 			if (!uipath.isAuthenticated()) {
 				throw new Error('Not authenticated. Please complete the authentication flow.');
 			}
-
 			const result = await uipath.maestro.processes.instances.getBpmn(instanceId, folderKey);
 			return result;
 		},
@@ -257,7 +230,6 @@ export function useUiPathMaestroBpmnDiagram(
 		gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
 	});
 }
-
 /**
  * Fetch execution history for a Maestro process instance
  *
@@ -277,13 +249,10 @@ export function useUiPathMaestroExecutionHistory(
 			if (!instanceId) {
 				throw new Error('Instance ID is required');
 			}
-
 			const uipath = getUiPath();
-			
 			if (!uipath.isAuthenticated()) {
 				throw new Error('Not authenticated. Please complete the authentication flow.');
 			}
-
 			const result = await uipath.maestro.processes.instances.getExecutionHistory(instanceId);
 			return result;
 		},
@@ -292,7 +261,6 @@ export function useUiPathMaestroExecutionHistory(
 		gcTime: 3 * 60 * 1000, // Keep in cache for 3 minutes
 	});
 }
-
 /**
  * Fetch global variables for a Maestro process instance
  *
@@ -308,7 +276,7 @@ export function useUiPathMaestroExecutionHistory(
  * @param folderKey - The folder key where the instance resides
  * @param variableOptions - Optional parameters for filtering variables (e.g., parentElementId)
  * @param queryOptions - Optional React Query options
- * 
+ *
  *
  */
 export function useUiPathMaestroVariables(
@@ -323,19 +291,15 @@ export function useUiPathMaestroVariables(
 			if (!instanceId || !folderKey) {
 				throw new Error('Instance ID and folder key are required');
 			}
-
 			const uipath = getUiPath();
-			
 			if (!uipath.isAuthenticated()) {
 				throw new Error('Not authenticated. Please complete the authentication flow.');
 			}
-
 			const result: ProcessInstanceGetVariablesResponse = await uipath.maestro.processes.instances.getVariables(
 				instanceId,
 				folderKey,
 				variableOptions
 			);
-			
 			return result;
 		},
 		enabled: queryOptions?.enabled !== false && !!instanceId && !!folderKey,

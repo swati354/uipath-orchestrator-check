@@ -7,7 +7,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { TaskAssignmentDialog } from '@/components/TaskAssignmentDialog';
 import { TaskCompletionDialog } from '@/components/TaskCompletionDialog';
 import { useUiPathTasks } from '@/lib/uipath-hooks';
-import { useUiPathAuth } from '@/contexts/UiPathAuthContext';
+import { useUiPathAuth } from '@/hooks/useUiPathAuth';
 import { Search, Filter, UserPlus, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,7 +33,7 @@ export function TaskTable() {
   // Filter tasks based on search and status
   const filteredTasks = taskArray.filter((task) => {
     const matchesSearch = task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.description?.toLowerCase().includes(searchTerm.toLowerCase());
+                         task.data?.toLowerCase().includes(searchTerm.toLowerCase()); // Use data instead of description
     const matchesStatus = statusFilter === 'all' ||
                          task.status?.toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
@@ -68,6 +68,15 @@ export function TaskTable() {
       default:
         return 'text-gray-600';
     }
+  };
+  // Helper function to get assignee display name
+  const getAssigneeDisplay = (assignedToUser: any): string => {
+    if (!assignedToUser) return 'Unassigned';
+    if (typeof assignedToUser === 'string') return assignedToUser;
+    if (typeof assignedToUser === 'object' && assignedToUser.userName) {
+      return assignedToUser.userName;
+    }
+    return 'Assigned';
   };
   if (isLoading) {
     return (
@@ -156,9 +165,9 @@ export function TaskTable() {
                   <TableCell className="py-3">
                     <div>
                       <div className="font-medium text-sm text-foreground">{task.title || 'Untitled Task'}</div>
-                      {task.description && (
+                      {task.data && (
                         <div className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                          {task.description}
+                          {task.data}
                         </div>
                       )}
                     </div>
@@ -176,14 +185,14 @@ export function TaskTable() {
                   </TableCell>
                   <TableCell className="py-3">
                     <span className="text-sm text-muted-foreground">
-                      {task.assignedToUser || 'Unassigned'}
+                      {getAssigneeDisplay(task.assignedToUser)}
                     </span>
                   </TableCell>
                   <TableCell className="py-3">
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      {task.creationTime
-                        ? formatDistanceToNow(new Date(task.creationTime), { addSuffix: true })
+                      {task.createdTime
+                        ? formatDistanceToNow(new Date(task.createdTime), { addSuffix: true })
                         : 'N/A'}
                     </div>
                   </TableCell>

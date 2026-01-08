@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useUiPathAssets } from '@/lib/uipath-hooks';
-import { useUiPathAuth } from '@/contexts/UiPathAuthContext';
+import { useUiPathAuth } from '@/hooks/useUiPathAuth';
 import { Search, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -52,7 +52,7 @@ export function AssetTable() {
         return 'bg-gray-100 text-gray-800';
     }
   };
-  const maskValue = (value: string, valueType: string) => {
+  const maskValue = (value: string | undefined, valueType: string) => {
     if (valueType?.toLowerCase() === 'credential' || valueType?.toLowerCase() === 'password') {
       return '••••••••';
     }
@@ -146,8 +146,8 @@ export function AssetTable() {
                   <TableCell className="py-3">
                     <div className="font-mono text-sm text-muted-foreground max-w-xs">
                       {visibleValues.has(asset.id)
-                        ? asset.stringValue || 'N/A'
-                        : maskValue(asset.stringValue, asset.valueType)}
+                        ? asset.value || 'N/A'
+                        : maskValue(asset.value, asset.valueType)}
                     </div>
                   </TableCell>
                   <TableCell className="py-3">
