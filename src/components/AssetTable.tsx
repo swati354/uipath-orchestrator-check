@@ -8,6 +8,7 @@ import { useUiPathAuth } from '@/contexts/UiPathAuthContext';
 import { Search, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { AssetGetResponse } from 'uipath-sdk';
 export function AssetTable() {
   const { isAuthenticated } = useUiPathAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,7 +24,15 @@ export function AssetTable() {
     setVisibleValues(newVisible);
   };
   // Handle pagination - UiPath SDK returns either array or paginated response
-  const assetArray = Array.isArray(assets) ? assets : assets?.value || [];
+  const assetArray: AssetGetResponse[] = React.useMemo(() => {
+    if (!assets) return [];
+    if (Array.isArray(assets)) return assets;
+    // Handle paginated response structure
+    if (typeof assets === 'object' && 'value' in assets && Array.isArray(assets.value)) {
+      return assets.value;
+    }
+    return [];
+  }, [assets]);
   // Filter assets based on search
   const filteredAssets = assetArray.filter((asset) =>
     asset.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -111,8 +120,8 @@ export function AssetTable() {
             {filteredAssets.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                  {searchTerm 
-                    ? 'No assets match your search' 
+                  {searchTerm
+                    ? 'No assets match your search'
                     : 'No assets found. Create assets in UiPath Orchestrator to see them here.'}
                 </TableCell>
               </TableRow>
@@ -136,7 +145,7 @@ export function AssetTable() {
                   </TableCell>
                   <TableCell className="py-3">
                     <div className="font-mono text-sm text-muted-foreground max-w-xs">
-                      {visibleValues.has(asset.id) 
+                      {visibleValues.has(asset.id)
                         ? asset.stringValue || 'N/A'
                         : maskValue(asset.stringValue, asset.valueType)}
                     </div>

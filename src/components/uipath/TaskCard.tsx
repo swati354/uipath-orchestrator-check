@@ -1,121 +1,172 @@
-/**
- * TaskCard Component
- *
- * Displays an Action Center task with assign and complete actions
- */
-
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { UserPlus, CheckCircle, AlertCircle, Calendar, User } from 'lucide-react';
-import { format } from 'date-fns';
-
-type TaskPriority = 'Low' | 'Medium' | 'High' | 'Critical';
-type TaskStatus = 'Unassigned' | 'Pending' | 'Completed';
-
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { CheckSquare, UserPlus, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { StatusBadge } from '@/components/StatusBadge';
+import { formatDistanceToNow } from 'date-fns';
 interface TaskCardProps {
-	task: {
-		id: string;
-		title: string;
-		description?: string;
-		priority: TaskPriority;
-		status: TaskStatus;
-		dueDate?: Date | string;
-		assignee?: string;
-	};
-	onAssign?: (taskId: string) => void;
-	onComplete?: (taskId: string) => void;
-	isAssigning?: boolean;
-	isCompleting?: boolean;
+  task: {
+    id: number | string;
+    title: string;
+    description?: string;
+    priority: string;
+    status: string;
+    dueDate?: string;
+    assignee?: string;
+    creationTime?: string;
+  };
+  onAssign: (taskId: string) => void;
+  onComplete: (taskId: string) => void;
+  isAssigning?: boolean;
+  isCompleting?: boolean;
 }
-
-const priorityConfig: Record<
-	TaskPriority,
-	{ variant: 'default' | 'secondary' | 'destructive' | 'outline'; className: string }
-> = {
-	Low: { variant: 'secondary', className: 'bg-gray-200 text-gray-800' },
-	Medium: { variant: 'default', className: 'bg-blue-200 text-blue-800' },
-	High: { variant: 'default', className: 'bg-orange-200 text-orange-800' },
-	Critical: { variant: 'destructive', className: 'bg-red-200 text-red-800' },
-};
-
-export function TaskCard({ task, onAssign, onComplete, isAssigning, isCompleting }: TaskCardProps) {
-	const dueDate = task.dueDate
-		? typeof task.dueDate === 'string'
-			? new Date(task.dueDate)
-			: task.dueDate
-		: null;
-
-	const isOverdue = dueDate && dueDate < new Date();
-	const priorityStyle = priorityConfig[task.priority];
-
-	return (
-		<Card className="hover:shadow-lg transition-shadow duration-200">
-			<CardHeader>
-				<div className="flex items-start justify-between">
-					<div className="flex-1">
-						<CardTitle className="text-lg font-semibold">{task.title}</CardTitle>
-						<CardDescription className="mt-1">
-							{task.description || 'No description available'}
-						</CardDescription>
-					</div>
-					<Badge variant={priorityStyle.variant} className={priorityStyle.className}>
-						{task.priority}
-					</Badge>
-				</div>
-			</CardHeader>
-			<CardContent>
-				<div className="space-y-2 text-sm">
-					{task.assignee && (
-						<div className="flex items-center gap-2 text-muted-foreground">
-							<User className="w-4 h-4" />
-							<span>Assigned to: {task.assignee}</span>
-						</div>
-					)}
-					{dueDate && (
-						<div className="flex items-center gap-2">
-							<Calendar className="w-4 h-4" />
-							<span className={isOverdue ? 'text-red-500 font-semibold' : 'text-muted-foreground'}>
-								Due: {format(dueDate, 'PPp')}
-								{isOverdue && (
-									<AlertCircle className="w-3 h-3 ml-1 inline text-red-500" />
-								)}
-							</span>
-						</div>
-					)}
-					<div>
-						<Badge variant="outline" className="text-xs">
-							{task.status}
-						</Badge>
-					</div>
-				</div>
-			</CardContent>
-			{(onAssign || onComplete) && task.status !== 'Completed' && (
-				<CardFooter className="flex gap-2">
-					{onAssign && task.status === 'Unassigned' && (
-						<Button
-							onClick={() => onAssign(task.id)}
-							disabled={isAssigning}
-							variant="outline"
-							className="flex-1"
-						>
-							<UserPlus className="w-4 h-4 mr-2" />
-							{isAssigning ? 'Assigning...' : 'Assign'}
-						</Button>
-					)}
-					{onComplete && task.status === 'Pending' && (
-						<Button
-							onClick={() => onComplete(task.id)}
-							disabled={isCompleting}
-							variant="default"
-							className="flex-1"
-						>
-							<CheckCircle className="w-4 h-4 mr-2" />
-							{isCompleting ? 'Completing...' : 'Complete'}
-						</Button>
-					)}
-				</CardFooter>
-			)}
-		</Card>
-	);
+export function TaskCard({ 
+  task, 
+  onAssign, 
+  onComplete, 
+  isAssigning = false, 
+  isCompleting = false 
+}: TaskCardProps) {
+  const getPriorityColor = (priority: string) => {
+    switch (priority?.toLowerCase()) {
+      case 'high':
+      case 'critical':
+        return 'bg-red-100 text-red-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'low':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+  const getStatusVariant = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+      case 'unassigned':
+        return 'warning';
+      case 'assigned':
+      case 'inprogress':
+        return 'info';
+      case 'completed':
+      case 'successful':
+        return 'success';
+      case 'failed':
+      case 'faulted':
+        return 'destructive';
+      default:
+        return 'secondary';
+    }
+  };
+  const canAssign = !task.assignee || task.status?.toLowerCase() === 'pending';
+  const canComplete = task.assignee && task.status?.toLowerCase() !== 'completed';
+  return (
+    <Card className="h-full hover:shadow-md transition-shadow duration-200 border-border">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FA4616] to-[#E55A1B] flex items-center justify-center">
+              <CheckSquare className="h-4 w-4 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-base font-semibold truncate">
+                {task.title}
+              </CardTitle>
+            </div>
+          </div>
+          <StatusBadge 
+            status={task.status}
+            variant={getStatusVariant(task.status)}
+          />
+        </div>
+        {task.description && (
+          <CardDescription className="text-sm text-muted-foreground line-clamp-2 mt-2">
+            {task.description}
+          </CardDescription>
+        )}
+      </CardHeader>
+      <CardContent className="pt-0 space-y-4">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Priority</span>
+            <Badge className={`text-xs ${getPriorityColor(task.priority)}`}>
+              {task.priority}
+            </Badge>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-muted-foreground">Assignee</span>
+            <span className="text-xs font-medium">
+              {task.assignee || 'Unassigned'}
+            </span>
+          </div>
+          {task.creationTime && (
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                <span>Created</span>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {formatDistanceToNow(new Date(task.creationTime), { addSuffix: true })}
+              </span>
+            </div>
+          )}
+          {task.dueDate && (
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-1 text-muted-foreground">
+                <AlertCircle className="h-3 w-3" />
+                <span>Due</span>
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {new Date(task.dueDate).toLocaleDateString()}
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="pt-2 border-t border-border space-y-2">
+          {canAssign && (
+            <Button
+              onClick={() => onAssign(String(task.id))}
+              disabled={isAssigning}
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
+              {isAssigning ? (
+                <>
+                  <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin mr-2" />
+                  Assigning...
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-3 w-3 mr-2" />
+                  Assign Task
+                </>
+              )}
+            </Button>
+          )}
+          {canComplete && (
+            <Button
+              onClick={() => onComplete(String(task.id))}
+              disabled={isCompleting}
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              size="sm"
+            >
+              {isCompleting ? (
+                <>
+                  <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin mr-2" />
+                  Completing...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-3 w-3 mr-2" />
+                  Complete Task
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
 }

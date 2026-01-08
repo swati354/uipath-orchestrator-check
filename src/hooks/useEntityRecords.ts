@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
-import { uipath } from '../lib/uipath';
+import { getUiPath } from '../lib/uipath';
 import type { EntityRecord, PaginatedResponse, PaginationCursor } from 'uipath-sdk';
-
 export interface UseEntityRecordsReturn {
   records: EntityRecord[];
   loading: boolean;
@@ -17,7 +16,6 @@ export interface UseEntityRecordsReturn {
   loadMore: () => Promise<void>;
   reset: () => void;
 }
-
 export function useEntityRecords(): UseEntityRecordsReturn {
   const [records, setRecords] = useState<EntityRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -30,7 +28,6 @@ export function useEntityRecords(): UseEntityRecordsReturn {
     expansionLevel?: number;
     pageSize?: number;
   }>({});
-
   const fetchRecords = useCallback(async (
     entityId: string,
     options?: {
@@ -41,10 +38,8 @@ export function useEntityRecords(): UseEntityRecordsReturn {
   ) => {
     setLoading(true);
     setError(null);
-
     try {
       console.log('[useEntityRecords] Fetching records for entity:', entityId, options);
-
       // Build options object with only defined values to avoid SDK errors
       const requestOptions: {
         expansionLevel: number;
@@ -54,19 +49,19 @@ export function useEntityRecords(): UseEntityRecordsReturn {
         expansionLevel: options?.expansionLevel ?? 0,
         pageSize: options?.pageSize ?? 50,
       };
-
       // Only add cursor if it's defined
       if (options?.cursor) {
         requestOptions.cursor = options.cursor;
       }
-
+      const uipath = getUiPath();
+      if (!uipath.isAuthenticated()) {
+        throw new Error('Not authenticated. Please complete the authentication flow.');
+      }
       const response: PaginatedResponse<EntityRecord> = await uipath.entities.getRecordsById(
         entityId,
         requestOptions
       );
-
-      console.log('[useEntityRecords] Fetched records:', response , 'records');
-
+      console.log('[useEntityRecords] Fetched records:', response, 'records');
       // If using cursor, append to existing records, otherwise replace
       if (options?.cursor) {
         setRecords(prev => [...prev, ...response.items]);
@@ -78,7 +73,6 @@ export function useEntityRecords(): UseEntityRecordsReturn {
           pageSize: options?.pageSize,
         });
       }
-
       setHasNextPage(response.hasNextPage);
       setNextCursor(response.nextCursor);
       setTotalCount(response.totalCount);
@@ -90,18 +84,15 @@ export function useEntityRecords(): UseEntityRecordsReturn {
       setLoading(false);
     }
   }, []);
-
   const loadMore = useCallback(async () => {
     if (!hasNextPage || !nextCursor || !currentEntityId || loading) {
       return;
     }
-
     await fetchRecords(currentEntityId, {
       ...currentOptions,
       cursor: nextCursor,
     });
   }, [hasNextPage, nextCursor, currentEntityId, currentOptions, loading, fetchRecords]);
-
   const reset = useCallback(() => {
     setRecords([]);
     setLoading(false);
@@ -112,7 +103,6 @@ export function useEntityRecords(): UseEntityRecordsReturn {
     setCurrentEntityId(null);
     setCurrentOptions({});
   }, []);
-
   return {
     records,
     loading,

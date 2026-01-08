@@ -3,7 +3,6 @@
  *
  * Main dashboard showing overview of processes, queues, and tasks
  */
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProcessCard } from '@/components/uipath/ProcessCard';
 import { QueueMonitor } from '@/components/uipath/QueueMonitor';
@@ -13,32 +12,37 @@ import { useUiPathQueues } from '@/hooks/useUiPathQueues';
 import { useUiPathTasks, useAssignTask, useCompleteTask } from '@/hooks/useUiPathTasks';
 import { AlertCircle, Activity } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-
 export function DashboardPage() {
 	const { data: processes, isLoading: processesLoading, error: processesError } = useUiPathProcesses();
 	const { data: queues, isLoading: queuesLoading, error: queuesError } = useUiPathQueues();
 	const { data: tasks, isLoading: tasksLoading, error: tasksError } = useUiPathTasks();
-
 	const { mutate: startProcess, isPending: isStartingProcess } = useStartProcess();
 	const { mutate: assignTask, isPending: isAssigningTask } = useAssignTask();
 	const { mutate: completeTask, isPending: isCompletingTask } = useCompleteTask();
-
 	const handleStartProcess = (processKey: string) => {
-		startProcess({ processKey });
+		startProcess({ 
+			processKey, 
+			folderId: 1 // Default folder - in real app this would be dynamic
+		});
 	};
-
 	const handleAssignTask = (taskId: string) => {
 		// In a real app, you'd have a dialog to select the user
 		// For demo purposes, we'll use a placeholder email
-		assignTask({ taskId, userNameOrEmail: 'user@example.com' });
+		assignTask({ 
+			taskId: parseInt(taskId), 
+			userNameOrEmail: 'user@example.com' 
+		});
 	};
-
 	const handleCompleteTask = (taskId: string) => {
 		// In a real app, you'd have a form to collect task data
 		// For demo purposes, we'll just complete with empty data
-		completeTask({ taskId, action: 'submit' });
+		completeTask({ 
+			taskId: parseInt(taskId), 
+			type: 'External' as any,
+			action: 'submit',
+			folderId: 1 // Default folder - in real app this would be dynamic
+		});
 	};
-
 	return (
 		<main className="min-h-screen bg-background p-6">
 			<div className="max-w-7xl mx-auto space-y-6">
@@ -52,7 +56,6 @@ export function DashboardPage() {
 						Monitor and manage your UiPath Orchestrator processes, queues, and tasks
 					</p>
 				</header>
-
 				{/* Tabs for different sections */}
 				<Tabs defaultValue="processes" className="space-y-4">
 					<TabsList>
@@ -60,7 +63,6 @@ export function DashboardPage() {
 						<TabsTrigger value="queues">Queues</TabsTrigger>
 						<TabsTrigger value="tasks">Tasks</TabsTrigger>
 					</TabsList>
-
 					{/* Processes Tab */}
 					<TabsContent value="processes" className="space-y-4">
 						{processesError && (
@@ -72,7 +74,6 @@ export function DashboardPage() {
 								</AlertDescription>
 							</Alert>
 						)}
-
 						{processesLoading ? (
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 								{[1, 2, 3].map((i) => (
@@ -103,7 +104,6 @@ export function DashboardPage() {
 							</div>
 						)}
 					</TabsContent>
-
 					{/* Queues Tab */}
 					<TabsContent value="queues" className="space-y-4">
 						{queuesError && (
@@ -115,7 +115,6 @@ export function DashboardPage() {
 								</AlertDescription>
 							</Alert>
 						)}
-
 						{queuesLoading ? (
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 								{[1, 2, 3].map((i) => (
@@ -149,7 +148,6 @@ export function DashboardPage() {
 							</div>
 						)}
 					</TabsContent>
-
 					{/* Tasks Tab */}
 					<TabsContent value="tasks" className="space-y-4">
 						{tasksError && (
@@ -161,7 +159,6 @@ export function DashboardPage() {
 								</AlertDescription>
 							</Alert>
 						)}
-
 						{tasksLoading ? (
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 								{[1, 2, 3].map((i) => (

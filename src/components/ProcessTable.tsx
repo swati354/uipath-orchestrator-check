@@ -10,6 +10,7 @@ import { Play, Search, Filter, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import type { ProcessGetResponse } from 'uipath-sdk';
 export function ProcessTable() {
   const { isAuthenticated } = useUiPathAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,12 +30,20 @@ export function ProcessTable() {
     }
   };
   // Handle pagination - UiPath SDK returns either array or paginated response
-  const processArray = Array.isArray(processes) ? processes : processes?.value || [];
+  const processArray: ProcessGetResponse[] = React.useMemo(() => {
+    if (!processes) return [];
+    if (Array.isArray(processes)) return processes;
+    // Handle paginated response structure
+    if (typeof processes === 'object' && 'value' in processes && Array.isArray(processes.value)) {
+      return processes.value;
+    }
+    return [];
+  }, [processes]);
   // Filter processes based on search and status
   const filteredProcesses = processArray.filter((process) => {
     const matchesSearch = process.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          process.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || 
+    const matchesStatus = statusFilter === 'all' ||
                          (statusFilter === 'published' && process.isLatestVersion) ||
                          (statusFilter === 'active' && process.isActive);
     return matchesSearch && matchesStatus;
@@ -112,8 +121,8 @@ export function ProcessTable() {
             {filteredProcesses.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                  {searchTerm || statusFilter !== 'all' 
-                    ? 'No processes match your filters' 
+                  {searchTerm || statusFilter !== 'all'
+                    ? 'No processes match your filters'
                     : 'No processes found. Create processes in UiPath Orchestrator to see them here.'}
                 </TableCell>
               </TableRow>
@@ -136,14 +145,14 @@ export function ProcessTable() {
                     </span>
                   </TableCell>
                   <TableCell className="py-3">
-                    <StatusBadge 
-                      status={process.isLatestVersion ? 'Available' : 'Inactive'} 
+                    <StatusBadge
+                      status={process.isLatestVersion ? 'Available' : 'Inactive'}
                       variant={process.isLatestVersion ? 'success' : 'secondary'}
                     />
                   </TableCell>
                   <TableCell className="py-3">
                     <span className="text-sm text-muted-foreground">
-                      {process.lastModifiedTime 
+                      {process.lastModifiedTime
                         ? new Date(process.lastModifiedTime).toLocaleDateString()
                         : 'N/A'}
                     </span>

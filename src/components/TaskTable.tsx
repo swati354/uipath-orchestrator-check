@@ -12,20 +12,29 @@ import { Search, Filter, UserPlus, CheckCircle, AlertCircle, Clock } from 'lucid
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
+import type { RawTaskGetResponse } from 'uipath-sdk';
 export function TaskTable() {
   const { isAuthenticated } = useUiPathAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedTaskForAssignment, setSelectedTaskForAssignment] = useState<any>(null);
-  const [selectedTaskForCompletion, setSelectedTaskForCompletion] = useState<any>(null);
+  const [selectedTaskForAssignment, setSelectedTaskForAssignment] = useState<RawTaskGetResponse | null>(null);
+  const [selectedTaskForCompletion, setSelectedTaskForCompletion] = useState<RawTaskGetResponse | null>(null);
   const { data: tasks, isLoading, error, refetch } = useUiPathTasks(undefined, isAuthenticated);
   // Handle pagination - UiPath SDK returns either array or paginated response
-  const taskArray = Array.isArray(tasks) ? tasks : tasks?.value || [];
+  const taskArray: RawTaskGetResponse[] = React.useMemo(() => {
+    if (!tasks) return [];
+    if (Array.isArray(tasks)) return tasks;
+    // Handle paginated response structure
+    if (typeof tasks === 'object' && 'value' in tasks && Array.isArray(tasks.value)) {
+      return tasks.value;
+    }
+    return [];
+  }, [tasks]);
   // Filter tasks based on search and status
   const filteredTasks = taskArray.filter((task) => {
     const matchesSearch = task.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          task.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || 
+    const matchesStatus = statusFilter === 'all' ||
                          task.status?.toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
@@ -136,8 +145,8 @@ export function TaskTable() {
             {filteredTasks.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
-                  {searchTerm || statusFilter !== 'all' 
-                    ? 'No tasks match your filters' 
+                  {searchTerm || statusFilter !== 'all'
+                    ? 'No tasks match your filters'
                     : 'No tasks found. Create tasks in UiPath Action Center to see them here.'}
                 </TableCell>
               </TableRow>
@@ -160,8 +169,8 @@ export function TaskTable() {
                     </span>
                   </TableCell>
                   <TableCell className="py-3">
-                    <StatusBadge 
-                      status={task.status || 'Pending'} 
+                    <StatusBadge
+                      status={task.status || 'Pending'}
                       variant={getStatusVariant(task.status)}
                     />
                   </TableCell>
@@ -173,7 +182,7 @@ export function TaskTable() {
                   <TableCell className="py-3">
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      {task.creationTime 
+                      {task.creationTime
                         ? formatDistanceToNow(new Date(task.creationTime), { addSuffix: true })
                         : 'N/A'}
                     </div>
