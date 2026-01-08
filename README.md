@@ -2,7 +2,7 @@
 
 A comprehensive enterprise management console for UiPath Orchestrator that provides centralized monitoring and control of automation resources. Built with React, TypeScript, and the UiPath SDK for seamless integration with your automation infrastructure.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/swati354/uipath-orchestrator-check)
 
 ## Features
 
@@ -129,7 +129,7 @@ src/
 
 ### Cloudflare Pages
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/swati354/uipath-orchestrator-check)
 
 For manual deployment:
 
