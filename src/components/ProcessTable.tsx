@@ -141,7 +141,7 @@ export function ProcessTable() {
                   </TableCell>
                   <TableCell className="py-3">
                     <span className="text-sm font-mono text-muted-foreground">
-                      {process.processVersion || 'N/A'}
+                      {process.version || 'N/A'}
                     </span>
                   </TableCell>
                   <TableCell className="py-3">

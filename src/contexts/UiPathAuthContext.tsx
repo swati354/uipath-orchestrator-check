@@ -6,7 +6,7 @@ interface UiPathAuthContextType {
   error: string | null;
   reinitialize: () => Promise<void>;
 }
-export const UiPathAuthContext = createContext<UiPathAuthContextType | undefined>(undefined);
+const UiPathAuthContext = createContext<UiPathAuthContextType | undefined>(undefined);
 export function UiPathAuthProvider({ children }: { children: ReactNode }) {
   const [isInitializing, setIsInitializing] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -57,3 +57,5 @@ export function UiPathAuthProvider({ children }: { children: ReactNode }) {
     </UiPathAuthContext.Provider>
   );
 }
+// Export context for the hook to use
+export { UiPathAuthContext };

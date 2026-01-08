@@ -146,8 +146,8 @@ export function AssetTable() {
                   <TableCell className="py-3">
                     <div className="font-mono text-sm text-muted-foreground max-w-xs">
                       {visibleValues.has(asset.id)
-                        ? asset.stringValue || 'N/A'
-                        : maskValue(asset.stringValue, asset.valueType)}
+                        ? asset.value || 'N/A'
+                        : maskValue(asset.value, asset.valueType)}
                     </div>
                   </TableCell>
                   <TableCell className="py-3">
